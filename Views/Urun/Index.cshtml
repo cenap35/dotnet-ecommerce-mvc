@@ -32,7 +32,7 @@
                                            <tr>
                                         <td>@urun.Id</td>
                                         <td>
-                                            <img src="img/@urun.Resim" class="img-fluid" alt="">
+                                            <img src="~/img/@urun.Resim" class="img-fluid" alt="">
                                         </td>
                                         <td>@urun.UrunAdi</td>
                                         <td>@urun.Fiyat</td>
@@ -58,7 +58,8 @@
                                         </td>
                                         <td>@urun.KategoriAdi</td>
                                         <td>
-                                            <a  class="btn btn-primary btn-sm">
+                                            <a asp-controller="Urun" asp-action="Edit" asp-route-id="@urun.Id" 
+                                            class="btn btn-primary btn-sm">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
                                         </td>

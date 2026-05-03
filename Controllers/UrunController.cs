@@ -71,8 +71,14 @@ public class UrunController : Controller
     }
 
     [HttpPost]
-    public ActionResult Create(UrunCreateModel model)
+    public async Task<ActionResult> Create(UrunCreateModel model)
     {
+        var fileName = Path.GetRandomFileName() + ".jpg"; //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
+        using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
+        {
+            await model.Resim!.CopyToAsync(stream); //dosya upload işlemi
+        }
 
         var urun = new Urun
         {
@@ -82,11 +88,69 @@ public class UrunController : Controller
             Aktif = model.Aktif,
             Anasayfa = model.Anasayfa,
             KategoriId = model.KategoriId,
-            Resim = "1.jpeg" //upload işlemi yapmadığımız için şimdilik resim kısmını sabit tuttum ama ilerleyen zamanlarda upload işlemi yaparak dinamik hale getirebiliriz
+            Resim = fileName //upload işlemi
         };
         _context.Urunler.Add(urun);
         _context.SaveChanges();
         
         return RedirectToAction("Index"); //işlem tamamlandıktan sonra index sayfasına yönlendirdim böylece eklediğimiz ürünü görebiliriz
     }
+
+    public ActionResult Edit(int id)
+    {
+        var urun = _context.Urunler.Select(u => new UrunEditModel
+        {
+            Id = u.Id,
+            UrunAdi = u.UrunAdi,
+            Aciklama = u.Aciklama,
+            Fiyat = u.Fiyat,
+            Aktif = u.Aktif,
+            Anasayfa = u.Anasayfa,
+            KategoriId = u.KategoriId,
+            ResimAdi = u.Resim
+        }).FirstOrDefault(u => u.Id == id);
+
+        ViewBag.Kategoriler = _context.Kategoriler.ToList();
+
+        return View(urun);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> Edit(int id,UrunEditModel model)
+    {
+        if (id != model.Id)
+        {
+            return RedirectToAction("index");
+        }
+        var urun = _context.Urunler.FirstOrDefault(u => u.Id == model.Id);
+        if (urun != null)
+        {
+            if (model.ResimDosyasi != null) //eğer kullanıcı yeni resim yüklemek isterse
+            {
+                var fileName = Path.GetRandomFileName() + Path.GetExtension(model.ResimDosyasi.FileName); //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
+                using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
+                {
+                    await model.ResimDosyasi.CopyToAsync(stream); //dosya upload işlemi
+                }
+                urun.Resim = fileName; //yeni resim yüklenirse eski resim adı yerine yeni resim adı kaydedilir
+            }
+
+            urun.UrunAdi = model.UrunAdi;
+            urun.Aciklama = model.Aciklama;
+            urun.Fiyat = model.Fiyat;
+            urun.Aktif = model.Aktif;
+            urun.Anasayfa = model.Anasayfa;
+            urun.KategoriId = model.KategoriId;
+            
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = $"{urun.UrunAdi} adlı ürün güncellendi.";
+            return RedirectToAction("Index");
+        }
+        
+        return View(model);
+
+    }
+
 }

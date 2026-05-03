@@ -9,7 +9,7 @@ public class UrunCreateModel
     [Display(Name = "Fiyat")]
     public double Fiyat { get; set; }
     [Display(Name = "Ürün Resmi")]
-    public string? Resim { get; set; }
+    public IFormFile? Resim { get; set; }
 
     public string? Aciklama { get; set; }
     public bool Aktif { get; set; }
