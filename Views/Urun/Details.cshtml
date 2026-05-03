@@ -1,0 +1,109 @@
+@model Urun
+
+<section class="mt-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="gallery-wrap">
+                    <div class="img-big-wrap img-thumbnail">
+                        <a href="~/img/@Model.Resim" data-type="image" data-fslightbox>
+                            <img src="~/img/@Model.Resim" alt="@Model.UrunAdi">
+                        </a>
+                    </div>
+                    <div class="thumbs-wrap">
+                        <a href="~/img/@Model.Resim" data-type="image" data-fslightbox>
+                            <img src="~/img/@Model.Resim" height="60" alt="@Model.UrunAdi">
+                        </a>
+                        <!-- Eğer galeri için başka küçük resimler de olacaksa aşağıya ekleyebilirsiniz -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <article>
+                    <h4 class="title text-dark">@Model.UrunAdi</h4>
+                    <div class="rating-wrap">
+                        <span class="fa fa-star checked"></span>
+                        <span class="fa fa-star checked"></span>
+                        <span class="fa fa-star checked"></span>
+                        <span class="fa fa-star checked"></span>
+                        <span class="fa fa-star"></span>
+                    </div>
+                    <p class="text-success">@((Model.Aktif) ? "Stokta" : "Stokta Yok")</p>
+                    <div class="mb-3"><b class="price h5">@Model.Fiyat ₺</b></div>
+                    <div class="product-description mb-3">
+                        @Model.Aciklama
+                    </div>
+                    <dl class="row border-bottom">
+                        <dt class="col-3">Renk</dt>
+                        <dd class="col-9">-</dd>
+                        <dt class="col-3">Bağlantı Özellikleri</dt>
+                        <dd class="col-9">-</dd>
+                    </dl>
+                    <div class="row mb-3">
+                        <div class="col-md-4 col-6">
+                            <label class="form-label">Kasa Boyutu</label>
+                            <select class="form-select">
+                                <option value="">41 mm</option>
+                                <option value="">45 mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="buttons">
+                        <a href="#" class="btn btn-warning">
+                            <i class="fa fa-shopping-basket me-1"></i> Sepete Ekle
+                        </a>
+                        <a href="#" class="btn btn-light">
+                            <i class="fa-regular fa-heart basket me-1"></i> Listeye Ekle
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mt-3">
+    <div class="container">
+        <h4 class="mb-3">Benzer Ürünler</h4>
+        <div class="row gy-3">
+            @* Benzer ürün listesi için örnek olarak, aktif ve anasayfa ürünleri çekiyoruz *@
+            @{
+                var benzerUrunler =(List<Urun>)ViewData["BenzerUrunler"]!;
+            }
+            @if (benzerUrunler != null)
+            {
+                foreach (var urun in benzerUrunler)
+                {
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="card shadow">
+                            <div class="img-wrap">
+                                <a href="#" class="float-end btn btn-light">
+                                    <i class="fa-regular fa-heart"></i>
+                                </a>
+                                <img src="~/img/@urun.Resim" alt="@urun.UrunAdi" class="card-img-top">
+                            </div>
+                            <div class="border-top info-wrap">
+                                <a asp-controller="Urun" asp-action="Details" asp-route-id="@urun.Id" class="title text-truncate">
+                                    @urun.UrunAdi
+                                </a>
+                                <div class="price-wrap mb-3">
+                                    <span class="price-discount">@urun.Fiyat ₺</span>
+                                    @* <del class="price">49.999 ₺</del> *@
+                                </div>
+                                <a href="#" class="btn btn-light w-100">
+                                    <i class="fa fa-shopping-basket me-1"></i> Sepete Ekle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="alert alert-info">Benzer ürün bulunamadı.</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
