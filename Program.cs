@@ -27,7 +27,8 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+// app.MapStaticAssets(); //wwwroot klasöründeki dosyalara erişim sağlamak için kullanılır. Örneğin wwwroot/img/1.jpeg dosyasına erişmek için bu middleware'i kullanırız. Bu middleware'i kullanmazsak wwwroot klasöründeki dosyalara erişim sağlanamaz.
+app.UseStaticFiles(); //mapstaticassets ile aynı işlemi yapar ancak mapstaticassets daha performanslıdır çünkü sadece statik dosyalara erişim sağlar. UseStaticFiles ise tüm istekleri kontrol eder ve statik dosya isteği olup olmadığını kontrol eder. neden kullandım resim upload da uyarı veriordu çalışıordu ama?
 
 // urun/telefon
 // urun/bilgisayar ...
