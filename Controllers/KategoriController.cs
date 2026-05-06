@@ -34,7 +34,9 @@ public class KategoriController : Controller
     [HttpPost]
     public ActionResult Create(KategoriCreateModel model)
     {   
-        var kategori = new Kategori
+        if (ModelState.IsValid)
+        {
+            var kategori = new Kategori
         {
             KategoriAdi = model.KategoriAdi,
             Url = model.Url
@@ -43,6 +45,8 @@ public class KategoriController : Controller
         _context.SaveChanges();
         
         return RedirectToAction("Index"); //işlem tamamlandıktan sonra index sayfasına yönlendirdim böylece eklediğimiz kategoriyi görebiliriz
+        }
+        return View(model); //model geçerli değilse tekrar formu doldurmak için aynı modeli döndürüyoruz
     }
 
     public ActionResult Edit(int id)
@@ -67,6 +71,8 @@ public class KategoriController : Controller
         {
             return NotFound();
         }
+        if (ModelState.IsValid)
+        {
         var kategori = _context.Kategoriler.FirstOrDefault(k => k.Id == Id);
         if (kategori!= null)
         {
@@ -78,8 +84,8 @@ public class KategoriController : Controller
 
             return RedirectToAction("Index");
         }
+    }
         return View(model);
     }
-
     
 }
