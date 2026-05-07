@@ -135,42 +135,42 @@ public class UrunController : Controller
         {
             return RedirectToAction("index");
         }
-        if(model.Resim == null || model.Resim!.Length == 0)
-        {
-            ModelState.AddModelError("Resim", "Lütfen bir resim dosyası seçin.");
-        }
-        if(ModelState.IsValid)
-        {
-        
+
         var urun = _context.Urunler.FirstOrDefault(u => u.Id == model.Id);
-        if (urun != null)
+        if (urun == null)
         {
-            if (model.Resim != null) //eğer kullanıcı yeni resim yüklemek isterse
-            {
-                var fileName = Path.GetRandomFileName() + Path.GetExtension(model.Resim.FileName); //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
-                using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
-                {
-                    await model.Resim.CopyToAsync(stream); //dosya upload işlemi
-                }
-                urun.Resim = fileName; //yeni resim yüklenirse eski resim adı yerine yeni resim adı kaydedilir
-            }
-
-            urun.UrunAdi = model.UrunAdi;
-            urun.Aciklama = model.Aciklama;
-            urun.Fiyat = model.Fiyat ?? 0;
-            urun.Aktif = model.Aktif;
-            urun.Anasayfa = model.Anasayfa;
-            urun.KategoriId =(int)model.KategoriId!;
-            
-            _context.SaveChanges();
-
-            TempData["Mesaj"] = $"{urun.UrunAdi} adlı ürün güncellendi.";
-            return RedirectToAction("Index");
+            return NotFound();
         }
-    }
-        ViewBag.Kategoriler = _context.Kategoriler.ToList();
-        return View(model);
+
+        if (!ModelState.IsValid)
+        {
+            model.ResimAdi = urun.Resim;
+            ViewBag.Kategoriler = _context.Kategoriler.ToList();
+            return View(model);
+        }
+
+        if (model.Resim != null && model.Resim.Length > 0) //eğer kullanıcı yeni resim yüklemek isterse
+        {
+            var fileName = Path.GetRandomFileName() + Path.GetExtension(model.Resim.FileName); //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
+            using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
+            {
+                await model.Resim.CopyToAsync(stream); //dosya upload işlemi
+            }
+            urun.Resim = fileName; //yeni resim yüklenirse eski resim adı yerine yeni resim adı kaydedilir
+        }
+
+        urun.UrunAdi = model.UrunAdi;
+        urun.Aciklama = model.Aciklama;
+        urun.Fiyat = model.Fiyat ?? 0;
+        urun.Aktif = model.Aktif;
+        urun.Anasayfa = model.Anasayfa;
+        urun.KategoriId =(int)model.KategoriId!;
+        
+        await _context.SaveChangesAsync();
+
+        TempData["Mesaj"] = $"{urun.UrunAdi} adlı ürün güncellendi.";
+        return RedirectToAction("Index");
 
     }
 

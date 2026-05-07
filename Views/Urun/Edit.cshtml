@@ -7,6 +7,7 @@
 <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 <form asp-controller="Urun" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="Id">
+    <input type="hidden" asp-for="ResimAdi">
 
     <div class="row">
         <div class="col-md-8">
