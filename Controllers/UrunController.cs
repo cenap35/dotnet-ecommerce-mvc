@@ -2,6 +2,7 @@ using dotnet_store.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace dotnet_store.Controllers;
 
@@ -73,6 +74,14 @@ public class UrunController : Controller
     [HttpPost]
     public async Task<ActionResult> Create(UrunCreateModel model)
     {
+        if (model.Resim == null || model.Resim!.Length == 0)
+        {
+            ModelState.AddModelError("Resim", "Lütfen bir resim dosyası seçin.");
+        }
+        
+        if(ModelState.IsValid)
+        {
+            
         var fileName = Path.GetRandomFileName() + ".jpg"; //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
         var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
         using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
@@ -84,16 +93,20 @@ public class UrunController : Controller
         {
             UrunAdi = model.UrunAdi,
             Aciklama = model.Aciklama,
-            Fiyat = model.Fiyat,
+            Fiyat = model.Fiyat ?? 0, //modelde fiyat nullable olduğu için null gelme ihtimaline karşı 0 verdim
             Aktif = model.Aktif,
             Anasayfa = model.Anasayfa,
-            KategoriId = model.KategoriId,
+            KategoriId = (int)model.KategoriId!,
             Resim = fileName //upload işlemi
         };
         _context.Urunler.Add(urun);
         _context.SaveChanges();
-        
         return RedirectToAction("Index"); //işlem tamamlandıktan sonra index sayfasına yönlendirdim böylece eklediğimiz ürünü görebiliriz
+        }
+         
+        ViewBag.Kategoriler = _context.Kategoriler.ToList();
+        return View(model);
+        
     }
 
     public ActionResult Edit(int id)
@@ -122,33 +135,41 @@ public class UrunController : Controller
         {
             return RedirectToAction("index");
         }
+        if(model.Resim == null || model.Resim!.Length == 0)
+        {
+            ModelState.AddModelError("Resim", "Lütfen bir resim dosyası seçin.");
+        }
+        if(ModelState.IsValid)
+        {
+        
         var urun = _context.Urunler.FirstOrDefault(u => u.Id == model.Id);
         if (urun != null)
         {
-            if (model.ResimDosyasi != null) //eğer kullanıcı yeni resim yüklemek isterse
+            if (model.Resim != null) //eğer kullanıcı yeni resim yüklemek isterse
             {
-                var fileName = Path.GetRandomFileName() + Path.GetExtension(model.ResimDosyasi.FileName); //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
+                var fileName = Path.GetRandomFileName() + Path.GetExtension(model.Resim.FileName); //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
                 using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
                 {
-                    await model.ResimDosyasi.CopyToAsync(stream); //dosya upload işlemi
+                    await model.Resim.CopyToAsync(stream); //dosya upload işlemi
                 }
                 urun.Resim = fileName; //yeni resim yüklenirse eski resim adı yerine yeni resim adı kaydedilir
             }
 
             urun.UrunAdi = model.UrunAdi;
             urun.Aciklama = model.Aciklama;
-            urun.Fiyat = model.Fiyat;
+            urun.Fiyat = model.Fiyat ?? 0;
             urun.Aktif = model.Aktif;
             urun.Anasayfa = model.Anasayfa;
-            urun.KategoriId = model.KategoriId;
+            urun.KategoriId =(int)model.KategoriId!;
             
             _context.SaveChanges();
 
             TempData["Mesaj"] = $"{urun.UrunAdi} adlı ürün güncellendi.";
             return RedirectToAction("Index");
         }
-        
+    }
+        ViewBag.Kategoriler = _context.Kategoriler.ToList();
         return View(model);
 
     }

@@ -1,20 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace dotnet_store.Models;
 
-public class UrunCreateModel
+public class UrunCreateModel : UrunModel //inheritance => kalıtım
 {
-    [Display(Name = "Ürün Adı")]
-    public string UrunAdi { get; set; } = null!;
-    [Display(Name = "Fiyat")]
-    public double Fiyat { get; set; }
-    [Display(Name = "Ürün Resmi")]
-    public IFormFile? Resim { get; set; }
-
-    public string? Aciklama { get; set; }
-    public bool Aktif { get; set; }
-    public bool Anasayfa { get; set; }
-
-    public int KategoriId { get; set; }
 
 }
