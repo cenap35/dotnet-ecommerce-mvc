@@ -88,4 +88,37 @@ public class KategoriController : Controller
         return View(model);
     }
     
+    // Remove işlemi için iki action oluşturuyoruz biri silme onayı göstermek için diğeri ise silme işlemini gerçekleştirmek için
+    public ActionResult Delete(int? id)
+    {
+        if (id == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var kategori = _context.Kategoriler.FirstOrDefault(k => k.Id == id);
+        if (kategori != null)
+        {
+            return View(kategori);
+        }
+        return RedirectToAction("Index");
+    }
+
+
+    [HttpPost]
+    public ActionResult DeleteConfirm(int? id)
+    {
+         if (id == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var kategori = _context.Kategoriler.FirstOrDefault(k => k.Id == id);
+        if (kategori != null)
+        {
+            _context.Kategoriler.Remove(kategori);
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = $"{kategori.KategoriAdi} adlı kategori silindi.";
+        }
+        return RedirectToAction("Index");
+    }
 }
