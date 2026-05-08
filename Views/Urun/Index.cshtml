@@ -22,10 +22,11 @@
                                         <th>Ürün Adı</th>
                                         <th>Fiyat</th>
                                         <th>Aktif</th>
-                                        <th>Anasayfa</th>
-                                        <th>Kategori</th>
-                                        <th style="width: 50px;"></th>
-                                    </tr>
+	                                        <th>Anasayfa</th>
+	                                        <th>Kategori</th>
+	                                        <th style="width: 50px;"></th>
+	                                        <th style="width: 50px;"></th>
+	                                    </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var urun in Model){
@@ -61,6 +62,13 @@
                                             <a asp-controller="Urun" asp-action="Edit" asp-route-id="@urun.Id" 
                                             class="btn btn-primary btn-sm">
                                                 <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a asp-controller="Urun" asp-action="Delete" asp-route-id="@urun.Id">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
                                             </a>
                                         </td>
                                     </tr>

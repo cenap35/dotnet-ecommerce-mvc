@@ -174,4 +174,37 @@ public class UrunController : Controller
 
     }
 
+    //remove işlemi için get ve post olmak üzere iki action oluşturduk çünkü kullanıcı silme işlemi yaparken önce onay sayfasına yönlendirilecek ve burada silmek istediğinden emin olacak eğer onay verirse post action'ı çalışacak ve ürün silinecek
+     public ActionResult Delete(int? id)
+    {
+        if (id == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var urun = _context.Urunler.FirstOrDefault(u => u.Id == id);
+        if (urun != null)
+        {
+            return View(urun);
+        }
+        return RedirectToAction("Index");
+    }
+
+
+    [HttpPost]
+    public ActionResult DeleteConfirm(int? id)
+    {
+         if (id == null)
+        {
+            return RedirectToAction("Index");
+        }
+        var urun = _context.Urunler.FirstOrDefault(u => u.Id == id);
+        if (urun != null)
+        {
+            _context.Urunler.Remove(urun);
+            _context.SaveChanges();
+
+            TempData["Mesaj"] = $"{urun.UrunAdi} adlı ürün silindi.";
+        }
+        return RedirectToAction("Index");
+    }
 }
