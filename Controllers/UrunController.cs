@@ -1,5 +1,6 @@
 using dotnet_store.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -17,20 +18,22 @@ public class UrunController : Controller
 
     public ActionResult Index()
     {
-        var urunler = _context.Urunler.Select(i =>  new UrunGetModel
+        var urunler = _context.Urunler.Select(i => new UrunGetModel
         {
-                Id = i.Id,
-                UrunAdi = i.UrunAdi,
-                Fiyat = i.Fiyat,
-                Resim = i.Resim,
-                Aktif = i.Aktif,
-                Anasayfa = i.Anasayfa,
-                KategoriAdi = i.Kategori.KategoriAdi
-            }).ToList();
-        
+            Id = i.Id,
+            UrunAdi = i.UrunAdi,
+            Fiyat = i.Fiyat,
+            Resim = i.Resim,
+            Aktif = i.Aktif,
+            Anasayfa = i.Anasayfa,
+            KategoriAdi = i.Kategori.KategoriAdi
+        }).ToList();
+
+        ViewBag.Kategoriler = new SelectList(_context.Kategoriler.ToList(), "Id", "KategoriAdi");
+
         return View(urunler);
     }
-    
+
     public ActionResult List(string url, string q)
     {
         var urunler = _context.Urunler.Where(u => u.Aktif).AsQueryable();
@@ -39,9 +42,9 @@ public class UrunController : Controller
         {
             urunler = urunler.Where(u => u.Kategori.Url == url);
         }
-         if (!string.IsNullOrEmpty(q))
+        if (!string.IsNullOrEmpty(q))
         {
-            urunler = urunler.Where(u => u.UrunAdi.ToLower().Contains(q.ToLower())); 
+            urunler = urunler.Where(u => u.UrunAdi.ToLower().Contains(q.ToLower()));
         }
 
         return View(urunler.ToList());
@@ -49,7 +52,7 @@ public class UrunController : Controller
     }
 
     public ActionResult Details(int id)
-    {   
+    {
         // id'ye göre urun getir
         var urun = _context.Urunler.FirstOrDefault(u => u.Id == id);
 
@@ -59,7 +62,7 @@ public class UrunController : Controller
             return RedirectToAction("Index", "Home");  // urun bulunamazsa liste sayfasına yönlendir
         }
         ViewBag.BenzerUrunler = _context.Urunler.Where(u => u.Aktif && u.KategoriId == urun.KategoriId && u.Id != id).Take(4).ToList(); //burada urun olmazsa sıkıntı çıkakr ondan yukarıda kontrol yapabiliriz
-        
+
         return View(urun);
     }
 
@@ -68,7 +71,7 @@ public class UrunController : Controller
         // ViewData["Kategoriler"] = _context.Kategoriler.ToList();
         ViewBag.Kategoriler = _context.Kategoriler.ToList(); //ViewBag ile de gönderebiliriz 
         return View();
-    
+
     }
 
     [HttpPost]
@@ -78,35 +81,35 @@ public class UrunController : Controller
         {
             ModelState.AddModelError("Resim", "Lütfen bir resim dosyası seçin.");
         }
-        
-        if(ModelState.IsValid)
+
+        if (ModelState.IsValid)
         {
-            
-        var fileName = Path.GetRandomFileName() + ".jpg"; //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
-        using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
-        {
-            await model.Resim!.CopyToAsync(stream); //dosya upload işlemi
+
+            var fileName = Path.GetRandomFileName() + ".jpg"; //random bir isim oluşturduk çünkü aynı isimde dosya yüklenirse eski dosyanın üzerine yazılabilir 
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", fileName); //wwwroot/img/1.jpeg kaydedilecek dosya yolu
+            using (var stream = new FileStream(path, FileMode.Create)) //dosya oluşturma işlemi
+            {
+                await model.Resim!.CopyToAsync(stream); //dosya upload işlemi
+            }
+
+            var urun = new Urun
+            {
+                UrunAdi = model.UrunAdi,
+                Aciklama = model.Aciklama,
+                Fiyat = model.Fiyat ?? 0, //modelde fiyat nullable olduğu için null gelme ihtimaline karşı 0 verdim
+                Aktif = model.Aktif,
+                Anasayfa = model.Anasayfa,
+                KategoriId = (int)model.KategoriId!,
+                Resim = fileName //upload işlemi
+            };
+            _context.Urunler.Add(urun);
+            _context.SaveChanges();
+            return RedirectToAction("Index"); //işlem tamamlandıktan sonra index sayfasına yönlendirdim böylece eklediğimiz ürünü görebiliriz
         }
 
-        var urun = new Urun
-        {
-            UrunAdi = model.UrunAdi,
-            Aciklama = model.Aciklama,
-            Fiyat = model.Fiyat ?? 0, //modelde fiyat nullable olduğu için null gelme ihtimaline karşı 0 verdim
-            Aktif = model.Aktif,
-            Anasayfa = model.Anasayfa,
-            KategoriId = (int)model.KategoriId!,
-            Resim = fileName //upload işlemi
-        };
-        _context.Urunler.Add(urun);
-        _context.SaveChanges();
-        return RedirectToAction("Index"); //işlem tamamlandıktan sonra index sayfasına yönlendirdim böylece eklediğimiz ürünü görebiliriz
-        }
-         
         ViewBag.Kategoriler = _context.Kategoriler.ToList();
         return View(model);
-        
+
     }
 
     public ActionResult Edit(int id)
@@ -129,7 +132,7 @@ public class UrunController : Controller
     }
 
     [HttpPost]
-    public async Task<ActionResult> Edit(int id,UrunEditModel model)
+    public async Task<ActionResult> Edit(int id, UrunEditModel model)
     {
         if (id != model.Id)
         {
@@ -165,8 +168,8 @@ public class UrunController : Controller
         urun.Fiyat = model.Fiyat ?? 0;
         urun.Aktif = model.Aktif;
         urun.Anasayfa = model.Anasayfa;
-        urun.KategoriId =(int)model.KategoriId!;
-        
+        urun.KategoriId = (int)model.KategoriId!;
+
         await _context.SaveChangesAsync();
 
         TempData["Mesaj"] = $"{urun.UrunAdi} adlı ürün güncellendi.";
@@ -175,7 +178,7 @@ public class UrunController : Controller
     }
 
     //remove işlemi için get ve post olmak üzere iki action oluşturduk çünkü kullanıcı silme işlemi yaparken önce onay sayfasına yönlendirilecek ve burada silmek istediğinden emin olacak eğer onay verirse post action'ı çalışacak ve ürün silinecek
-     public ActionResult Delete(int? id)
+    public ActionResult Delete(int? id)
     {
         if (id == null)
         {
@@ -193,7 +196,7 @@ public class UrunController : Controller
     [HttpPost]
     public ActionResult DeleteConfirm(int? id)
     {
-         if (id == null)
+        if (id == null)
         {
             return RedirectToAction("Index");
         }
